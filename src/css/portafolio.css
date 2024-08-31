@@ -1,0 +1,33 @@
+.hero-background {
+    background: rgb(149, 48, 217);
+    background: linear-gradient(
+      85deg,
+      rgba(149, 48, 217, 1) 0%,
+      rgba(242, 61, 160, 1) 100%
+    );
+  }
+  
+  .btn-primary {
+    background-color: #ffffff;
+    border-color: #ffffff;
+    color: #e61094;
+  }
+  .btn-primary:hover {
+    color: #c51180;
+    background-color: #ddd3d3;
+    border-color: #ddd3d3;
+  }
+  .link-primary {
+    color: #e61094;
+  }
+  .link-primary:hover {
+    color: #c51180;
+  }
+
+  .text-pink{
+    color: #e61094;
+  }
+
+  .text-purple{
+    color: #471A73;
+  }
