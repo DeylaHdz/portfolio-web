@@ -1,0 +1,860 @@
+server {
+    server_name mydigitalmind.ai; # Replace with your domain
+
+    # Configuration to serve static files
+    root /var/www/mydigitalmind;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Section for new static front end at /onebot
+    location /onebot/ {
+        alias /var/www/mydigitalmind/onebot/;
+        try_files $uri $uri/ /onebot/index.html;
+    }
+
+    #location /onebot/ {
+        #alias /var/www/mydigitalmind/onebot/;
+        #autoindex on;
+        #try_files $uri $uri/ =404;
+        #add_header Access-Control-Allow-Origin *;
+        #add_header Access-Control-Allow-Methods 'GET, POST, OPTIONS';
+        #add_header Access-Control-Allow-Headers 'Content-Type, Authorization';
+        #add_header Content-Type $content_type;
+        #add_header Cache-Control "no-store";
+    #}
+
+    location /animaciones/ {
+        alias /var/www/mydigitalmind/animaciones/;
+        autoindex on;  # Esto permite listar los archivos en la carpeta
+    }
+
+    # Section for new static front end at /tequila
+    location /tequila/ {
+        alias /var/www/mydigitalmind/tequila/;
+        try_files $uri $uri/ /tequila/index.html;
+    }
+
+
+
+    location /developer/ {
+        alias /var/www/mydigitalmind/developer/;
+        try_files $uri $uri/ /developer/index.html;
+    }
+
+
+
+
+     # ------- Armando FRONT-------$
+
+    # Section for new static front end at /armando
+        location /armando/ {
+            alias /var/www/mydigitalmind/armando/;
+            try_files $uri $uri/ /armando/index.html;
+    }
+    # -----FIN Armando FRONT-------$
+
+
+    # ------- Edward  FRONT-------$
+
+    # Section for new static front end at /edward
+        location /edward/ {
+            alias /var/www/mydigitalmind/edward/;
+            try_files $uri $uri/ /edward/index.html;
+    }
+    # -----FIN Edward FRONT-------$
+
+
+    #-------------------------Deyla--------------------------#
+    # Section for new static front end at /deyla
+        location /deyla/ {
+        alias /var/www/mydigitalmind/deyla/;
+        try_files $uri $uri/ /deyla/index.html;
+    }
+    #------------------------------------------------------#
+    
+   # Section for new static front end at /roberto
+   location /roberto/ {
+        alias /var/www/mydigitalmind/roberto/;
+	try_files $uri $uri/ /roberto/index.html;
+   }
+   
+   # Section for new static front end at /tony
+   location /tony/ {
+        alias /var/www/mydigitalmind/tony/;
+        try_files $uri $uri/ /tony/index.html;
+   }
+
+    # Section for new static front end at /samuel
+    location /samuel/ {
+        alias /var/www/mydigitalmind/samuel/;
+        try_files $uri $uri/ /samuel/index.html;
+    }
+
+
+    # Section to serve public files for Twilio
+    location /uploads/ {
+        alias /var/www/mydigitalmind/uploads/;
+        autoindex on; # Optional, allows listing files in the directory
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods 'GET, POST, OPTIONS';
+        add_header Access-Control-Allow-Headers 'Content-Type, Authorization';
+    }
+
+    location /upload {
+        proxy_pass http://127.0.0.1:8003/upload;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Add CORS headers if needed
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT';
+        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization';
+        add_header 'Access-Control-Allow-Credentials' 'true';
+
+        # Handle OPTIONS requests for preflight
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+    }
+
+    listen 443 ssl;
+    ssl_certificate /etc/letsencrypt/live/mydigitalmind.ai/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/mydigitalmind.ai/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+
+    # Proxy configuration to pass specific API requests to Flask on port 8000
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Add CORS headers here
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT';
+        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization';
+        add_header 'Access-Control-Allow-Credentials' 'true';
+
+        # Handle OPTIONS requests for preflight
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+
+        # Buffer settings to handle large response headers
+        proxy_buffer_size 128k;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size 256k;
+
+        # Skip the '/api' part in requests to the Flask backend
+        rewrite ^/api/(.*)$ /$1 break;
+    }
+
+    # Proxy configuration to pass specific API requests to Flask on port 8001
+    location /api/onebot/ {
+        proxy_pass http://127.0.0.1:8001/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Add CORS headers here
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT';
+        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization';
+        add_header 'Access-Control-Allow-Credentials' 'true';
+
+        # Handle OPTIONS requests for preflight
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+
+        # Buffer settings to handle large response headers
+        proxy_buffer_size 128k;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size 256k;
+
+        # Skip the '/api/onebot' part in requests to the Flask backend
+        rewrite ^/api/(.*)$ /$1 break;
+    }
+
+    location /onebot/send-video {
+        proxy_pass http://127.0.0.1:8001/onebot/send-video;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Proxy configuration to pass specific API requests to Flask on port 8003
+    location /api/tony/ {
+        proxy_pass http://127.0.0.1:8003/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Add CORS headers here
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT';
+        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization';
+        add_header 'Access-Control-Allow-Credentials' 'true';
+
+        # Handle OPTIONS requests for preflight
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+
+        # Buffer settings to handle large response headers
+        proxy_buffer_size 128k;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size 256k;
+
+        # Skip the '/api/tony' part in requests to the Flask backend
+        rewrite ^/api/(.*)$ /$1 break;
+    }
+
+    # Proxy configuration to pass specific API requests to Flask on port 8012
+    location /api/roberto/ {
+        proxy_pass http://127.0.0.1:8012/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    
+        # Add CORS headers here
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT';
+        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization';
+        add_header 'Access-Control-Allow-Credentials' 'true';
+    
+        # Handle OPTIONS requests for preflight
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+    
+        # Buffer settings to handle large response headers
+        proxy_buffer_size 128k;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size 256k;
+
+        # Skip the '/api/roberto' part in requests to the Flask backend
+        rewrite ^/api/(.*)$ /$1 break;
+    }
+
+
+
+    # ------- Armando API-------$
+    # Proxy configuration to pass specific API requests to Flask on port 8003
+        location /api/armando/ {
+            proxy_pass http://127.0.0.1:8008/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # Add CORS headers here
+            add_header 'Access-Control-Allow-Origin' '*';
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT';
+            add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization';
+            add_header 'Access-Control-Allow-Credentials' 'true';
+
+            # Handle OPTIONS requests for preflight
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Max-Age' 1728000;
+                add_header 'Content-Type' 'text/plain charset=UTF-8';
+                add_header 'Content-Length' 0;
+                return 204;
+            }
+
+            # Buffer settings to handle large response headers
+            proxy_buffer_size 128k;
+            proxy_buffers 4 256k;
+            proxy_busy_buffers_size 256k;
+
+            # Skip the '/api/armando' part in requests to the Flask backend
+            rewrite ^/api/(.*)$ /$1 break;
+        }
+    # ----FIN Armando API-------$
+
+
+
+
+    # ------- Edward Api-------$
+    # Proxy configuration to pass specific API requests to Flask on port 8002
+        location /api/edward/ {
+            proxy_pass http://127.0.0.1:8002/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # Add CORS headers here
+            add_header 'Access-Control-Allow-Origin' '*';
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT';
+            add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization';
+            add_header 'Access-Control-Allow-Credentials' 'true';
+
+            # Handle OPTIONS requests for preflight
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Max-Age' 1728000;
+                add_header 'Content-Type' 'text/plain charset=UTF-8';
+                add_header 'Content-Length' 0;
+                return 204;
+            }
+
+            # Buffer settings to handle large response headers
+            proxy_buffer_size 128k;
+            proxy_buffers 4 256k;
+            proxy_busy_buffers_size 256k;
+
+            # Skip the '/api/armando' part in requests to the Flask backend
+            rewrite ^/api/(.*)$ /$1 break;
+        }
+
+    # ----FIN Edward-API-------$
+
+
+
+
+
+    #--------------Deyla-------------------------------------------------------------#
+    
+    # Proxy configuration to pass specific API requests to Flask on port 8009
+    location /api/deyla/ {
+        proxy_pass http://127.0.0.1:8009/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Add CORS headers here
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT';
+        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization';
+        add_header 'Access-Control-Allow-Credentials' 'true';
+
+        # Handle OPTIONS requests for preflight
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+
+        # Buffer settings to handle large response headers
+        proxy_buffer_size 128k;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size 256k;
+
+        # Skip the '/api/deyla' part in requests to the Flask backend
+        rewrite ^/api/(.*)$ /$1 break;
+    }
+
+
+    #------------------------------------------------------------------------------------#
+
+
+    # Proxy configuration to pass specific authorization requests to Flask
+    location /authorize {
+        proxy_pass http://127.0.0.1:8000/authorize;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Proxy configuration to pass specific API requests to Flask on port 8004
+    location /api/tequila/ {
+        proxy_pass http://127.0.0.1:8004/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Add CORS headers here
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT';
+        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization';
+        add_header 'Access-Control-Allow-Credentials' 'true';
+
+        # Handle OPTIONS requests for preflight
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+
+        # Buffer settings to handle large response headers
+        proxy_buffer_size 128k;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size 256k;
+
+        # Skip the '/api/tequila' part in requests to the Flask backend
+        rewrite ^/api/(.*)$ /$1 break;
+    }
+
+
+    location /tequila/authorize {
+        proxy_pass http://127.0.0.1:8004/tequila/authorize;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+
+    # Proxy configuration to pass specific authorization requests to Flask on port 8001
+    location /onebot/authorize {
+        proxy_pass http://127.0.0.1:8001/onebot/authorize;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Proxy configuration to pass specific API requests to Flask on port 8005
+    location /api/samuel/ {
+        proxy_pass http://127.0.0.1:8005/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Add CORS headers here
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT';
+        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization';
+        add_header 'Access-Control-Allow-Credentials' 'true';
+
+        # Handle OPTIONS requests for preflight
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+
+        # Buffer settings to handle large response headers
+        proxy_buffer_size 128k;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size 256k;
+
+        # Skip the '/api/samuel' part in requests to the Flask backend
+        rewrite ^/api/(.*)$ /$1 break;
+    }
+
+    location /samuel/authorize {
+        proxy_pass http://127.0.0.1:8005/samuel/authorize;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+
+
+    # Proxy configuration to pass specific authorization requests to Flask on port 8003
+    location /tony/authorize {
+        proxy_pass http://127.0.0.1:8003/tony/authorize;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+	
+
+    # Proxy configuration to pass specific authorization requests to Flask on port 8012
+    location /roberto/authorize {
+        proxy_pass http://127.0.0.1:8012/roberto/authorize;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+
+ # ------- Armando Authorize-------$
+    # Proxy configuration to pass specific authorization requests to Flask on port 8003
+    location /armando/authorize {
+        proxy_pass http://127.0.0.1:8008/armando/authorize;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+ # ----FIN Armando Authorize-------$
+
+
+ # ------- Edward  Authorize-------$
+    # Proxy configuration to pass specific authorization requests to Flask on port 8002
+    location /edward/authorize {
+        proxy_pass http://127.0.0.1:8002/edward/authorize;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+ # ----FIN Edward  Authorize-------$
+
+
+
+
+
+    #--------------------------Deyla--------------------------------------------------------#
+
+    # Proxy configuration to pass specific authorization requests to Flask on port 8009
+    location /deyla/authorize {
+        proxy_pass http://127.0.0.1:8009/deyla/authorize;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Proxy configuration to pass specific whatsapp requests to Flask on port 8009
+    location /deyla/whatsapp {
+        proxy_pass http://127.0.0.1:8009/deyla/whatsapp;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+
+
+
+
+    #--------------------------Deyla--------------------------------------------------------#
+
+    # Proxy configuration to pass specific whatsapp requests to Flask on port 8003
+    location /whatsapp {
+        proxy_pass http://127.0.0.1:8000/whatsapp;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # Add timeout settings if necessary
+        proxy_read_timeout 90;
+        proxy_connect_timeout 90;
+    }
+
+
+    location /developer/whatsapp {
+        proxy_pass http://127.0.0.1:8006/developer/whatsapp;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+
+    location /developer/authorize {
+        proxy_pass http://127.0.0.1:8006/developer/authorize;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+
+    location /api/developer/ {
+        proxy_pass http://127.0.0.1:8006/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Añadir encabezados CORS aquí
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT';
+        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization';
+        add_header 'Access-Control-Allow-Credentials' 'true';
+
+        # Manejar solicitudes OPTIONS para CORS
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' '0';
+            return 204;
+        }
+
+        # Configuraciones de búfer para manejar encabezados de respuesta grandes
+        proxy_buffer_size 128k;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size 256k;
+
+        # Omitir la parte '/api/developer' en las solicitudes al backend de Flask
+        rewrite ^/api/(.*)$ /$1 break;
+    }
+
+
+
+
+
+ # ------- Armando whatssapp -------$
+    location /armando/whatsapp {
+        proxy_pass http://127.0.0.1:8008/armando/whatsapp;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+ # -----FIN Armando whatssapp -------$
+
+ # ------- Edward whatsapp -------$
+    location /edward/whatsapp {
+        proxy_pass http://127.0.0.1:8002/edward/whatsapp;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+ # -----FIN Edward Whatsapp -------$
+
+
+
+
+    # Proxy configuration to pass specific whatsapp requests to Flask on port 8003
+    location /samuel/whatsapp {
+        proxy_pass http://127.0.0.1:8005/samuel/whatsapp;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+
+
+
+    # Proxy configuration to pass specific whatsapp requests to Flask on port 8012
+    location /roberto/whatsapp {
+        proxy_pass http://127.0.0.1:8012/roberto/whatsapp;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+
+    # Proxy configuration to pass specific whatsapp requests to Flask on port 8003
+    location /tony/whatsapp {
+        proxy_pass http://127.0.0.1:8003/tony/whatsapp;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # -------------- Diego -----------------#
+
+    location /Diego/ {
+        alias /var/www/mydigitalmind/Diego/;
+        try_files $uri $uri/ /Diego/index.html;
+    }
+
+    location /Diego/whatsapp {
+        proxy_pass http://127.0.0.1:8397/Diego/whatsapp;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /Diego/authorize {
+        proxy_pass http://127.0.0.1:8397/Diego/authorize;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /api/Diego/ {
+        proxy_pass http://127.0.0.1:8397/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Añadir encabezados CORS aquí
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT';
+        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization';
+        add_header 'Access-Control-Allow-Credentials' 'true';
+
+        # Manejar solicitudes OPTIONS para CORS
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' '0';
+            return 204;
+        }
+
+        # Configuraciones de búfer para manejar encabezados de respuesta grandes
+        proxy_buffer_size 128k;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size 256k;
+
+        # Omitir la parte '/api/developer' en las solicitudes al backend de Flask
+        rewrite ^/api/(.*)$ /$1 break;
+    }
+    # --------------------------------------#
+
+
+    #-------------------------Asistente--------------------------#
+   # Section for new static front end at /asistente
+    location /asistente/ {
+        alias /var/www/mydigitalmind/asistente/;
+        try_files $uri $uri/ /asistente/index.html;
+   }
+    #------------------------------------------------------#
+
+    #--------------Asistente-------------------------------------------------------------#
+
+    # Proxy configuration to pass specific API requests to Flask on port 8024
+    location /api/asistente/ {
+        proxy_pass http://127.0.0.1:8024/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Add CORS headers here
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT';
+        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization';
+        add_header 'Access-Control-Allow-Credentials' 'true';
+
+        # Handle OPTIONS requests for preflight
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+
+        # Buffer settings to handle large response headers
+        proxy_buffer_size 128k;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size 256k;
+
+        # Skip the '/api/asistente' part in requests to the Flask backend
+        rewrite ^/api/(.*)$ /$1 break;
+    }
+    #--------------END Asistente-------------------------------------------------------------#
+
+
+    #--------------------------Asistente--------------------------------------------------------#
+
+    # Proxy configuration to pass specific authorization requests to Flask on port 8024
+    location /asistente/authorize {
+        proxy_pass http://127.0.0.1:8024/asistente/authorize;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Proxy configuration to pass specific whatsapp requests to Flask on port 8024
+    location /asistente/whatsapp {
+        proxy_pass http://127.0.0.1:8024/asistente/whatsapp;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    #--------------------------END Asistente--------------------------------------------------------#
+
+
+    # ------------ #
+
+
+}
+
+server {
+        if ($host = mydigitalmind.ai) {
+            return 301 https://$host$request_uri;
+        } # managed by Certbot
+
+        listen 80;
+        server_name mydigitalmind.ai;
+        return 404; # managed by Certbot
+    }
+    #-------------------------Asistente--------------------------#
+    # Section for new static front end at /asistente
+    location /test/ {
+    alias /var/www/mydigitalmind/asistente/;
+    try_files $uri $uri/ /asistente/index.html;
+    }
+    #-------------------------------------------------------------#
+
+    location /api/asistente/ {
+    proxy_pass http://127.0.0.1:8024/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    # Add CORS headers here
+    add_header 'Access-Control-Allow-Origin' '*';
+    add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT';
+    add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization';
+    add_header 'Access-Control-Allow-Credentials' 'true';
+    # Handle OPTIONS requests for preflight
+    if ($request_method = 'OPTIONS') {
+    add_header 'Access-Control-Max-Age' 1728000;
+    add_header 'Content-Type' 'text/plain charset=UTF-8';
+    add_header 'Content-Length' 0;
+    return 204;
+    }
+    # Buffer settings to handle large response headers
+    proxy_buffer_size 128k;
+    proxy_buffers 4 256k;
+    proxy_busy_buffers_size 256k;
+    # Skip the '/api/asistente' part in requests to the Flask backend
+    rewrite ^/api/(.*)$ /$1 break;
+    }
+    #--------------END Asistente----------------------#
+    #--------------Asistente--------------------------#
+    # Proxy configuration to pass specific authorization requests to Flask on port
+    8024
+    location /asistente/authorize {
+    proxy_pass http://127.0.0.1:8024/asistente/authorize;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    # Proxy configuration to pass specific whatsapp requests to Flask on port 8024
+    location /asistente/whatsapp {
+    proxy_pass http://127.0.0.1:8024/asisitente/whatsapp;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+    #--------------------------END Asistente---------------------------------#
