@@ -25,3 +25,26 @@
   .text-purple{
     color: #471A73;
   }
+
+
+#carouselExampleIndicators {
+  width: 100%;
+  max-width: 800px; 
+  height: 400px; 
+  margin: 0 auto; 
+}
+
+.carousel-inner {
+  width: 100%;
+  height: 100%;
+}
+
+.carousel-item {
+  height: 100%;
+}
+
+.carousel-image {
+  object-fit: cover; 
+  width: 100%;
+  height: 100%;
+}
